@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Oyunu Derle ve Calistir",
+            "type": "shell",
+            "command": "gcc main.c -o whackamole.exe -lmingw32 -lSDL2main -lSDL2 && .\\whackamole.exe",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "focus": true,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
