@@ -5,6 +5,33 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+// =====================================================
+// ADIM 2: Gradient (Renk Geçişi) Arkaplan Çizim Fonksiyonu
+// Ekranı yukarıdan aşağıya gökyüzü mavisinden çimen yeşiline boyar
+// =====================================================
+void drawGradientBackground(SDL_Renderer* renderer) {
+    // Üst renk: Gökyüzü Mavisi (R=135, G=206, B=235)
+    SDL_Color topColor    = {135, 206, 235, 255};
+    // Alt renk: Çimen Yeşili (R=34, G=139, B=34)
+    SDL_Color bottomColor = {34,  139, 34,  255};
+
+    // Ekranın en üstünden (y=0) en altına (y=WINDOW_HEIGHT) kadar
+    // her satır için ayrı ayrı renk hesaplayıp yatay bir çizgi çiziyoruz
+    for (int y = 0; y < WINDOW_HEIGHT; y++) {
+        // ratio: 0.0 (en üst) → 1.0 (en alt) arası bir oran
+        float ratio = (float)y / WINDOW_HEIGHT;
+
+        // O satır için rengi interpolasyon (enterpolasyon) ile hesapla
+        Uint8 r = (Uint8)(topColor.r + (bottomColor.r - topColor.r) * ratio);
+        Uint8 g = (Uint8)(topColor.g + (bottomColor.g - topColor.g) * ratio);
+        Uint8 b = (Uint8)(topColor.b + (bottomColor.b - topColor.b) * ratio);
+
+        // Hesaplanan renkle o satırı boydan boya çiz
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_RenderDrawLine(renderer, 0, y, WINDOW_WIDTH, y);
+    }
+}
+
 int main(int argc, char* argv[]) {
     // 1. SDL'i başlat
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -73,13 +100,14 @@ int main(int argc, char* argv[]) {
         }
 
         // 5. Çizim İşlemleri (Render)
-        // Arka plan rengini siyah olarak ayarla (R=0, G=0, B=0, Alpha=255)
+        // Önce ekranı siyaha temizle
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        
-        // Ekranı belirlediğimiz renkle temizle
         SDL_RenderClear(renderer);
 
-        // Arka planda çizilen her şeyi ekrana yansıt (Göster)
+        // ADIM 2: Gradient arkaplanı çiz (siyah temizliğin hemen üstüne)
+        drawGradientBackground(renderer);
+
+        // Çizilen her şeyi ekrana yansıt (Göster)
         SDL_RenderPresent(renderer);
     }
 
