@@ -15,7 +15,8 @@
 // =====================================================
 typedef enum { MOLE_HIDDEN, MOLE_RISING, MOLE_VISIBLE, MOLE_FALLING } MoleState;
 typedef enum { ITEM_MOLE, ITEM_BOMB } ItemType;
-typedef enum { STATE_PLAYING, STATE_GAME_OVER } GameState;
+typedef enum { STATE_MENU, STATE_PLAYING, STATE_GAME_OVER } GameState;
+typedef enum { DIFF_EASY, DIFF_MEDIUM, DIFF_HARD } Difficulty;
 
 // =====================================================
 // ADIM 5: Her deliğin kendi durumunu tutan yapı
@@ -404,9 +405,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    GameState gameState = STATE_PLAYING;
+    GameState gameState = STATE_MENU;
+    Difficulty selectedDifficulty = DIFF_MEDIUM;
     int score = 0;
-    SDL_SetWindowTitle(window, "Whack-a-Mole | Skor: 0 | Sure: 60");
+    SDL_SetWindowTitle(window, "Whack-a-Mole | Ana Menu");
 
     // Aynı anda sadece 1 delikten köstebek çıkar
     int  activeHole      = -1;          // Şu an aktif delik (-1 = yok)
@@ -415,6 +417,11 @@ int main(int argc, char* argv[]) {
     Uint32 gameStartTime  = SDL_GetTicks();
     Uint32 gameDuration   = 60000;      // 60 saniye (ms)
     int timeLeft          = 60;
+
+    // Zorluk Taban Parametreleri
+    float baseSpeed = 280.0f;
+    Uint32 baseVisibleWait = 1000;
+    int bombChance = 25;
 
     bool isRunning    = true;
     bool isFullscreen = false;
@@ -437,7 +444,7 @@ int main(int argc, char* argv[]) {
         }
 
         // =====================================================
-        // ADIM 6: Tek Aktif Delik State Machine & Oyun Durumu
+        // ADIM 5 & 6 & 7: Tek Aktif Delik State Machine & Oyun Durumu & Dinamik Zorluk
         // =====================================================
         if (gameState == STATE_PLAYING) {
             if (activeHole == -1) {
@@ -445,17 +452,25 @@ int main(int argc, char* argv[]) {
                 if (now - nextSpawnTimer >= nextSpawnDelay) {
                     activeHole = rand() % HOLE_COUNT; // Rastgele bir delik seç
                     Hole* h = &holes[activeHole];
-                    // Köstebek mi bomba mı? (%25 şans)
-                    if (bombTex && rand() % 100 < 25)
+                    // Köstebek mi bomba mı? (Zorluğa göre bomba gelme ihtimali)
+                    if (bombTex && rand() % 100 < bombChance)
                         h->itemType = ITEM_BOMB;
                     else {
                         h->itemType    = ITEM_MOLE;
                         h->currentMole = rand() % MOLE_TEX_COUNT;
                     }
+
+                    // Dinamik Zorluk: Skor arttıkça köstebekler daha hızlı hareket eder!
+                    h->speed = baseSpeed + (score * 0.5f);
+
+                    // Dinamik Zorluk: Skor arttıkça ekranda bekleme süresi azalır (min limit 350ms)
+                    int dynamicVisibleWait = (int)baseVisibleWait - (score * 12);
+                    if (dynamicVisibleWait < 350) dynamicVisibleWait = 350;
+
                     h->moleY     = h->hideY;
                     h->state     = MOLE_RISING;
                     h->stateTimer = now;
-                    h->visibleWait = 1000 + rand() % 800;
+                    h->visibleWait = dynamicVisibleWait + rand() % 300; // Küçük rastgelelik ekle
                 }
             } else {
                 // Aktif deliğin animasyonunu güncelle
@@ -479,7 +494,11 @@ int main(int argc, char* argv[]) {
                         h->state     = MOLE_HIDDEN;
                         activeHole   = -1;             // Delik boşaldı
                         nextSpawnTimer = now;
-                        nextSpawnDelay = 500 + rand() % 1000; // Sonraki köstebek için bekle
+                        // Seçilen zorluğa göre sonraki köstebeği bekleme süresi
+                        int dynamicSpawnDelay = 500 + rand() % 1000;
+                        if (selectedDifficulty == DIFF_HARD) dynamicSpawnDelay = 300 + rand() % 600;
+                        else if (selectedDifficulty == DIFF_EASY) dynamicSpawnDelay = 800 + rand() % 1200;
+                        nextSpawnDelay = dynamicSpawnDelay;
                     }
                 }
             }
@@ -496,9 +515,13 @@ int main(int argc, char* argv[]) {
                         isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     isRunning = false;
-                } else if (event.key.keysym.sym == SDLK_r) {
-                    // Oyun bittiğinde 'R' ile doğrudan yeniden başlatma
-                    if (gameState == STATE_GAME_OVER) {
+                } else if (gameState == STATE_MENU) {
+                    // Ana menüde zorluk seçimi
+                    if (event.key.keysym.sym == SDLK_1 || event.key.keysym.sym == SDLK_KP_1) {
+                        selectedDifficulty = DIFF_EASY;
+                        baseSpeed = 200.0f;
+                        baseVisibleWait = 1400;
+                        bombChance = 10;
                         score = 0;
                         activeHole = -1;
                         for (int i = 0; i < HOLE_COUNT; i++) {
@@ -508,7 +531,49 @@ int main(int argc, char* argv[]) {
                         gameStartTime = SDL_GetTicks();
                         timeLeft = 60;
                         gameState = STATE_PLAYING;
-                        SDL_SetWindowTitle(window, "Whack-a-Mole | Skor: 0 | Sure: 60");
+                        SDL_SetWindowTitle(window, "Whack-a-Mole | Zorluk: Kolay");
+                    } else if (event.key.keysym.sym == SDLK_2 || event.key.keysym.sym == SDLK_KP_2) {
+                        selectedDifficulty = DIFF_MEDIUM;
+                        baseSpeed = 280.0f;
+                        baseVisibleWait = 1000;
+                        bombChance = 25;
+                        score = 0;
+                        activeHole = -1;
+                        for (int i = 0; i < HOLE_COUNT; i++) {
+                            holes[i].state = MOLE_HIDDEN;
+                            holes[i].moleY = holes[i].hideY;
+                        }
+                        gameStartTime = SDL_GetTicks();
+                        timeLeft = 60;
+                        gameState = STATE_PLAYING;
+                        SDL_SetWindowTitle(window, "Whack-a-Mole | Zorluk: Orta");
+                    } else if (event.key.keysym.sym == SDLK_3 || event.key.keysym.sym == SDLK_KP_3) {
+                        selectedDifficulty = DIFF_HARD;
+                        baseSpeed = 380.0f;
+                        baseVisibleWait = 700;
+                        bombChance = 40;
+                        score = 0;
+                        activeHole = -1;
+                        for (int i = 0; i < HOLE_COUNT; i++) {
+                            holes[i].state = MOLE_HIDDEN;
+                            holes[i].moleY = holes[i].hideY;
+                        }
+                        gameStartTime = SDL_GetTicks();
+                        timeLeft = 60;
+                        gameState = STATE_PLAYING;
+                        SDL_SetWindowTitle(window, "Whack-a-Mole | Zorluk: Zor");
+                    }
+                } else if (event.key.keysym.sym == SDLK_r) {
+                    // Oyun bittiğinde 'R' ile ana menüye geri dön kanka!
+                    if (gameState == STATE_GAME_OVER) {
+                        score = 0;
+                        activeHole = -1;
+                        for (int i = 0; i < HOLE_COUNT; i++) {
+                            holes[i].state = MOLE_HIDDEN;
+                            holes[i].moleY = holes[i].hideY;
+                        }
+                        gameState = STATE_MENU;
+                        SDL_SetWindowTitle(window, "Whack-a-Mole | Ana Menu");
                     }
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
@@ -548,7 +613,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < HOLE_COUNT; i++)
             drawHole(renderer, &holes[i], holeTex, holeTexW, holeTexH, moleTex, bombTex);
 
-        // HUD Çizimi (Ekran üstünde canlı Skor ve Süre)
+        // Oynanış HUD (Skor, Süre, Zorluk)
         if (gameState == STATE_PLAYING) {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Beyaz
             char scoreStr[32];
@@ -558,6 +623,62 @@ int main(int argc, char* argv[]) {
             char timeStr[32];
             sprintf(timeStr, "SURE: %d", timeLeft);
             drawStrokeText(renderer, timeStr, WINDOW_WIDTH - 150, 20, 10, 16, 4);
+
+            // Mod Yazısı
+            char diffStr[32];
+            if (selectedDifficulty == DIFF_EASY) sprintf(diffStr, "KOLAY");
+            else if (selectedDifficulty == DIFF_MEDIUM) sprintf(diffStr, "ORTA");
+            else sprintf(diffStr, "ZOR");
+
+            char fullDiffStr[64];
+            sprintf(fullDiffStr, "MOD: %s", diffStr);
+            int fullDiffW = strlen(fullDiffStr) * 11;
+            drawStrokeText(renderer, fullDiffStr, (WINDOW_WIDTH - fullDiffW) / 2, 20, 8, 14, 3);
+        }
+
+        // ANA MENÜ EKRANI (Overlay)
+        if (gameState == STATE_MENU) {
+            // Yarı şeffaf siyah örtü
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+            SDL_Rect overlay = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+            SDL_RenderFillRect(renderer, &overlay);
+
+            // Başlık "WHACK A MOLE" (Ortalanmış ve Yanıp Sönen Efekt)
+            Uint32 ticks = SDL_GetTicks();
+            if ((ticks / 400) % 2 == 0) {
+                SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); // Altın
+            } else {
+                SDL_SetRenderDrawColor(renderer, 255, 140, 0, 255); // Turuncu
+            }
+            drawStrokeText(renderer, "WHACK A MOLE", 247, 120, 20, 36, 6);
+
+            // Açıklama
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Beyaz
+            const char* desc = "LUTFEN BIR ZORLUK SECEK TUSUNA BASIN";
+            int descLen = strlen(desc);
+            int descW = descLen * 11;
+            drawStrokeText(renderer, desc, (WINDOW_WIDTH - descW) / 2, 220, 8, 14, 3);
+
+            // Zorluklar
+            // 1 - KOLAY (Yeşil)
+            SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
+            drawStrokeText(renderer, "1 - KOLAY (EASY)", 280, 280, 10, 18, 4);
+
+            // 2 - ORTA (Sarı)
+            SDL_SetRenderDrawColor(renderer, 255, 165, 0, 255);
+            drawStrokeText(renderer, "2 - ORTA (MEDIUM)", 280, 330, 10, 18, 4);
+
+            // 3 - ZOR (Kırmızı)
+            SDL_SetRenderDrawColor(renderer, 220, 20, 60, 255);
+            drawStrokeText(renderer, "3 - ZOR (HARD)", 280, 380, 10, 18, 4);
+
+            // Alt Bilgi
+            SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255); // Gri
+            const char* footer = "KEYIFLI OYUNLAR DILERIZ";
+            int footerLen = strlen(footer);
+            int footerW = footerLen * 8;
+            drawStrokeText(renderer, footer, (WINDOW_WIDTH - footerW) / 2, WINDOW_HEIGHT - 60, 6, 10, 2);
         }
 
         // Oyun Bitti Ekranı (Overlay)
@@ -582,7 +703,7 @@ int main(int argc, char* argv[]) {
 
             // R ile Yeniden Başlatma Talimatı (Beyaz)
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Beyaz
-            const char* restartMsg = "YENIDEN BASLAMAK ICIN R TUSUNA BASIN";
+            const char* restartMsg = "ANA MENUYE DONMEK ICIN R TUSUNA BASIN";
             int restartCharCount = strlen(restartMsg);
             int restartW = restartCharCount * 11;
             drawStrokeText(renderer, restartMsg, (WINDOW_WIDTH - restartW) / 2, WINDOW_HEIGHT / 2 + 40, 8, 14, 3);
