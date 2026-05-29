@@ -15,6 +15,7 @@
 // =====================================================
 typedef enum { MOLE_HIDDEN, MOLE_RISING, MOLE_VISIBLE, MOLE_FALLING } MoleState;
 typedef enum { ITEM_MOLE, ITEM_BOMB } ItemType;
+typedef enum { STATE_PLAYING, STATE_GAME_OVER } GameState;
 
 // =====================================================
 // ADIM 5: Her deliğin kendi durumunu tutan yapı
@@ -111,6 +112,218 @@ void drawHole(SDL_Renderer* renderer, Hole* h,
     }
 }
 
+// =====================================================
+// ADIM 6: Retro Vector Font Çizim Sistemi
+// =====================================================
+void drawStrokeChar(SDL_Renderer* r, char c, int x, int y, int w, int h) {
+    switch (c) {
+        case 'A':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            break;
+        case 'B':
+            SDL_RenderDrawLine(r, x, y, x + w * 4 / 5, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w * 4 / 5, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h, x + w * 4 / 5, y + h);
+            SDL_RenderDrawLine(r, x + w * 4 / 5, y, x + w, y + h / 4);
+            SDL_RenderDrawLine(r, x + w, y + h / 4, x + w * 4 / 5, y + h / 2);
+            SDL_RenderDrawLine(r, x + w * 4 / 5, y + h / 2, x + w, y + h * 3 / 4);
+            SDL_RenderDrawLine(r, x + w, y + h * 3 / 4, x + w * 4 / 5, y + h);
+            break;
+        case 'C':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'D':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y, x + w * 2 / 3, y);
+            SDL_RenderDrawLine(r, x, y + h, x + w * 2 / 3, y + h);
+            SDL_RenderDrawLine(r, x + w * 2 / 3, y, x + w, y + h / 3);
+            SDL_RenderDrawLine(r, x + w, y + h / 3, x + w, y + h * 2 / 3);
+            SDL_RenderDrawLine(r, x + w, y + h * 2 / 3, x + w * 2 / 3, y + h);
+            break;
+        case 'E':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w * 2 / 3, y + h / 2);
+            break;
+        case 'G':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            SDL_RenderDrawLine(r, x + w, y + h / 2, x + w, y + h);
+            SDL_RenderDrawLine(r, x + w / 2, y + h / 2, x + w, y + h / 2);
+            break;
+        case 'H':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            break;
+        case 'I':
+            SDL_RenderDrawLine(r, x + w / 2, y, x + w / 2, y + h);
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'K':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h);
+            break;
+        case 'L':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'M':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y, x + w / 2, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y, x + w / 2, y + h / 2);
+            break;
+        case 'N':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            break;
+        case 'O':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'P':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            break;
+        case 'R':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h);
+            break;
+        case 'S':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y + h / 2, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'T':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x + w / 2, y, x + w / 2, y + h);
+            break;
+        case 'U':
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case 'V':
+            SDL_RenderDrawLine(r, x, y, x + w / 2, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w / 2, y + h);
+            break;
+        case 'Y':
+            SDL_RenderDrawLine(r, x, y, x + w / 2, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y, x + w / 2, y + h / 2);
+            SDL_RenderDrawLine(r, x + w / 2, y + h / 2, x + w / 2, y + h);
+            break;
+        case 'Z':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x + w, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '1':
+            SDL_RenderDrawLine(r, x + w / 2, y, x + w / 2, y + h);
+            SDL_RenderDrawLine(r, x + w / 4, y + h / 4, x + w / 2, y);
+            break;
+        case '2':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y + h / 2, x, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '3':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '4':
+            SDL_RenderDrawLine(r, x, y, x, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            break;
+        case '5':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y + h / 2, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '6':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y + h / 2, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '7':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            break;
+        case '8':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '9':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h / 2);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            break;
+        case '0':
+            SDL_RenderDrawLine(r, x, y, x + w, y);
+            SDL_RenderDrawLine(r, x, y, x, y + h);
+            SDL_RenderDrawLine(r, x + w, y, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y + h, x + w, y + h);
+            SDL_RenderDrawLine(r, x, y, x + w, y + h);
+            break;
+        case ':':
+            SDL_RenderDrawPoint(r, x + w / 2, y + h / 3);
+            SDL_RenderDrawPoint(r, x + w / 2, y + 2 * h / 3);
+            break;
+        case '!':
+            SDL_RenderDrawLine(r, x + w / 2, y, x + w / 2, y + h * 2 / 3);
+            SDL_RenderDrawPoint(r, x + w / 2, y + h);
+            break;
+        case '-':
+            SDL_RenderDrawLine(r, x, y + h / 2, x + w, y + h / 2);
+            break;
+    }
+}
+
+void drawStrokeText(SDL_Renderer* r, const char* text, int x, int y, int charW, int charH, int spacing) {
+    int curX = x;
+    while (*text) {
+        char c = *text;
+        if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
+        drawStrokeChar(r, c, curX, y, charW, charH);
+        curX += charW + spacing;
+        text++;
+    }
+}
+
 // Resim yükleme yardımcı fonksiyonu
 SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* path) {
     SDL_Surface* surf = IMG_Load(path);
@@ -191,13 +404,17 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    GameState gameState = STATE_PLAYING;
     int score = 0;
-    SDL_SetWindowTitle(window, "Whack-a-Mole | Skor: 0");
+    SDL_SetWindowTitle(window, "Whack-a-Mole | Skor: 0 | Sure: 60");
 
     // Aynı anda sadece 1 delikten köstebek çıkar
     int  activeHole      = -1;          // Şu an aktif delik (-1 = yok)
     Uint32 nextSpawnTimer = SDL_GetTicks();
     Uint32 nextSpawnDelay = 800;        // İlk köstebek 0.8s sonra çıksın
+    Uint32 gameStartTime  = SDL_GetTicks();
+    Uint32 gameDuration   = 60000;      // 60 saniye (ms)
+    int timeLeft          = 60;
 
     bool isRunning    = true;
     bool isFullscreen = false;
@@ -208,49 +425,62 @@ int main(int argc, char* argv[]) {
     while (isRunning) {
         Uint32 now = SDL_GetTicks();
 
-        // =====================================================
-        // ADIM 5: Tek Aktif Delik State Machine
-        // =====================================================
-        if (activeHole == -1) {
-            // Hiç aktif delik yok — bekleme süresi doldu mu?
-            if (now - nextSpawnTimer >= nextSpawnDelay) {
-                activeHole = rand() % HOLE_COUNT; // Rastgele bir delik seç
-                Hole* h = &holes[activeHole];
-                // Köstebek mi bomba mı?
-                if (bombTex && rand() % 100 < 25)
-                    h->itemType = ITEM_BOMB;
-                else {
-                    h->itemType    = ITEM_MOLE;
-                    h->currentMole = rand() % MOLE_TEX_COUNT;
-                }
-                h->moleY     = h->hideY;
-                h->state     = MOLE_RISING;
-                h->stateTimer = now;
-                h->visibleWait = 1000 + rand() % 800;
+        // Zaman Yönetimi
+        if (gameState == STATE_PLAYING) {
+            int elapsed = (int)(now - gameStartTime);
+            timeLeft = (int)((gameDuration - elapsed) / 1000);
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                gameState = STATE_GAME_OVER;
+                SDL_SetWindowTitle(window, "Whack-a-Mole | Oyun Bitti! Sure Doldu.");
             }
-        } else {
-            // Aktif deliğin animasyonunu güncelle
-            Hole* h = &holes[activeHole];
-            if (h->state == MOLE_RISING) {
-                h->moleY -= h->speed * deltaT;
-                if (h->moleY <= h->targetY) {
-                    h->moleY     = h->targetY;
-                    h->state     = MOLE_VISIBLE;
-                    h->stateTimer = now;
-                }
-            } else if (h->state == MOLE_VISIBLE) {
-                if (now - h->stateTimer >= h->visibleWait) {
-                    h->state     = MOLE_FALLING;
-                    h->stateTimer = now;
-                }
-            } else if (h->state == MOLE_FALLING) {
-                h->moleY += h->speed * deltaT;
-                if (h->moleY >= h->hideY) {
+        }
+
+        // =====================================================
+        // ADIM 6: Tek Aktif Delik State Machine & Oyun Durumu
+        // =====================================================
+        if (gameState == STATE_PLAYING) {
+            if (activeHole == -1) {
+                // Hiç aktif delik yok — bekleme süresi doldu mu?
+                if (now - nextSpawnTimer >= nextSpawnDelay) {
+                    activeHole = rand() % HOLE_COUNT; // Rastgele bir delik seç
+                    Hole* h = &holes[activeHole];
+                    // Köstebek mi bomba mı? (%25 şans)
+                    if (bombTex && rand() % 100 < 25)
+                        h->itemType = ITEM_BOMB;
+                    else {
+                        h->itemType    = ITEM_MOLE;
+                        h->currentMole = rand() % MOLE_TEX_COUNT;
+                    }
                     h->moleY     = h->hideY;
-                    h->state     = MOLE_HIDDEN;
-                    activeHole   = -1;             // Delik boşaldı
-                    nextSpawnTimer = now;
-                    nextSpawnDelay = 500 + rand() % 1000; // Sonraki köstebek için bekle
+                    h->state     = MOLE_RISING;
+                    h->stateTimer = now;
+                    h->visibleWait = 1000 + rand() % 800;
+                }
+            } else {
+                // Aktif deliğin animasyonunu güncelle
+                Hole* h = &holes[activeHole];
+                if (h->state == MOLE_RISING) {
+                    h->moleY -= h->speed * deltaT;
+                    if (h->moleY <= h->targetY) {
+                        h->moleY     = h->targetY;
+                        h->state     = MOLE_VISIBLE;
+                        h->stateTimer = now;
+                    }
+                } else if (h->state == MOLE_VISIBLE) {
+                    if (now - h->stateTimer >= h->visibleWait) {
+                        h->state     = MOLE_FALLING;
+                        h->stateTimer = now;
+                    }
+                } else if (h->state == MOLE_FALLING) {
+                    h->moleY += h->speed * deltaT;
+                    if (h->moleY >= h->hideY) {
+                        h->moleY     = h->hideY;
+                        h->state     = MOLE_HIDDEN;
+                        activeHole   = -1;             // Delik boşaldı
+                        nextSpawnTimer = now;
+                        nextSpawnDelay = 500 + rand() % 1000; // Sonraki köstebek için bekle
+                    }
                 }
             }
         }
@@ -266,29 +496,43 @@ int main(int argc, char* argv[]) {
                         isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     isRunning = false;
+                } else if (event.key.keysym.sym == SDLK_r) {
+                    // Oyun bittiğinde 'R' ile doğrudan yeniden başlatma
+                    if (gameState == STATE_GAME_OVER) {
+                        score = 0;
+                        activeHole = -1;
+                        for (int i = 0; i < HOLE_COUNT; i++) {
+                            holes[i].state = MOLE_HIDDEN;
+                            holes[i].moleY = holes[i].hideY;
+                        }
+                        gameStartTime = SDL_GetTicks();
+                        timeLeft = 60;
+                        gameState = STATE_PLAYING;
+                        SDL_SetWindowTitle(window, "Whack-a-Mole | Skor: 0 | Sure: 60");
+                    }
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
                 int mx = event.button.x;
                 int my = event.button.y;
-                // Sadece aktif deliği kontrol et
-                if (activeHole != -1) {
+                // Sadece oynarken ve aktif delik varken kontrol et
+                if (gameState == STATE_PLAYING && activeHole != -1) {
                     Hole* h = &holes[activeHole];
                     if (h->state == MOLE_RISING || h->state == MOLE_VISIBLE) {
                         SDL_Rect r = { h->cx - h->drawW / 2, (int)h->moleY, h->drawW, h->drawH };
                         if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= h->clipY) {
                             char title[150];
                             if (h->itemType == ITEM_BOMB) {
-                                score -= 50;
-                                if (score < 0) score = 0;
-                                sprintf(title, "Whack-a-Mole | 💥 Bomba! -50  |  Skor: %d", score);
+                                // Bombaya vurulduğu an oyun biter kanka!
+                                gameState = STATE_GAME_OVER;
+                                SDL_SetWindowTitle(window, "Whack-a-Mole | 💥 Patladın! Oyun Bitti!");
                             } else {
                                 score += 10;
-                                sprintf(title, "Whack-a-Mole | ⭐ +10  |  Skor: %d", score);
+                                sprintf(title, "Whack-a-Mole | ⭐ +10  |  Skor: %d  |  Sure: %d", score, timeLeft);
+                                SDL_SetWindowTitle(window, title);
+                                // Vurulunca hemen geri kaçsın
+                                h->state      = MOLE_FALLING;
+                                h->stateTimer = now;
                             }
-                            SDL_SetWindowTitle(window, title);
-                            // Vurulunca hemen geri kaçsın
-                            h->state      = MOLE_FALLING;
-                            h->stateTimer = now;
                         }
                     }
                 }
@@ -303,6 +547,46 @@ int main(int argc, char* argv[]) {
         // Delikleri arka satırdan öne doğru çiz (doğal perspektif için)
         for (int i = 0; i < HOLE_COUNT; i++)
             drawHole(renderer, &holes[i], holeTex, holeTexW, holeTexH, moleTex, bombTex);
+
+        // HUD Çizimi (Ekran üstünde canlı Skor ve Süre)
+        if (gameState == STATE_PLAYING) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Beyaz
+            char scoreStr[32];
+            sprintf(scoreStr, "SKOR: %d", score);
+            drawStrokeText(renderer, scoreStr, 20, 20, 10, 16, 4);
+
+            char timeStr[32];
+            sprintf(timeStr, "SURE: %d", timeLeft);
+            drawStrokeText(renderer, timeStr, WINDOW_WIDTH - 150, 20, 10, 16, 4);
+        }
+
+        // Oyun Bitti Ekranı (Overlay)
+        if (gameState == STATE_GAME_OVER) {
+            // Yarı şeffaf siyah overlay
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200); // 200/255 şeffaflık
+            SDL_Rect overlay = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+            SDL_RenderFillRect(renderer, &overlay);
+
+            // "OYUN BITTI" (Ortada Kırmızı Büyük Yazı)
+            SDL_SetRenderDrawColor(renderer, 220, 20, 60, 255); // Crimson Kırmızı
+            drawStrokeText(renderer, "OYUN BITTI", 286, WINDOW_HEIGHT / 2 - 80, 20, 36, 6);
+
+            // Nihai Skor (Altın Sarısı)
+            SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); // Gold
+            char finalScoreStr[64];
+            sprintf(finalScoreStr, "SKORUNUZ: %d", score);
+            int charCount = strlen(finalScoreStr);
+            int textW = charCount * 16;
+            drawStrokeText(renderer, finalScoreStr, (WINDOW_WIDTH - textW) / 2, WINDOW_HEIGHT / 2 - 20, 12, 20, 4);
+
+            // R ile Yeniden Başlatma Talimatı (Beyaz)
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Beyaz
+            const char* restartMsg = "YENIDEN BASLAMAK ICIN R TUSUNA BASIN";
+            int restartCharCount = strlen(restartMsg);
+            int restartW = restartCharCount * 11;
+            drawStrokeText(renderer, restartMsg, (WINDOW_WIDTH - restartW) / 2, WINDOW_HEIGHT / 2 + 40, 8, 14, 3);
+        }
 
         SDL_RenderPresent(renderer);
     }
