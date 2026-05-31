@@ -591,10 +591,31 @@ int main(int argc, char* argv[]) {
                                 gameState = STATE_GAME_OVER;
                                 SDL_SetWindowTitle(window, "Whack-a-Mole | 💥 Patladın! Oyun Bitti!");
                             } else {
-                                score += 10;
-                                sprintf(title, "Whack-a-Mole | ⭐ +10  |  Skor: %d  |  Sure: %d", score, timeLeft);
+                                int scoreGain = 10;
+                                if (selectedDifficulty == DIFF_MEDIUM) scoreGain = 20;
+                                else if (selectedDifficulty == DIFF_HARD) scoreGain = 30;
+                                score += scoreGain;
+
+                                bool timeBonus = false;
+                                if (h->currentMole == 3) {
+                                    timeBonus = true;
+                                    gameStartTime += 3000;
+                                    if (gameStartTime > now) gameStartTime = now;
+                                }
+
+                                // Kalan sureyi anlik guncelle ki baslikta dogru gozuksun
+                                int elapsed = (int)(now - gameStartTime);
+                                timeLeft = (int)((gameDuration - elapsed) / 1000);
+                                if (timeLeft > 60) timeLeft = 60;
+
+                                if (timeBonus) {
+                                    sprintf(title, "Whack-a-Mole | ⭐ +%d & ⏱️ +3s | Skor: %d | Sure: %d", scoreGain, score, timeLeft);
+                                } else {
+                                    sprintf(title, "Whack-a-Mole | ⭐ +%d | Skor: %d | Sure: %d", scoreGain, score, timeLeft);
+                                }
                                 SDL_SetWindowTitle(window, title);
-                                // Vurulunca hemen geri kaçsın
+
+                                // Vurulunca hemen geri kacsin
                                 h->state      = MOLE_FALLING;
                                 h->stateTimer = now;
                             }
